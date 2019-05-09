@@ -20,6 +20,7 @@ func main() {
 
 	dir1 := flag.String("dir1", "", "directory with configs")
 	dir2 := flag.String("dir2", "", "another directory with configs")
+	notPresentSide := flag.String("np", "dir1/dir2", "filter only not present")
 	flag.Parse()
 	if dir1 == nil || *dir1 == "" {
 		log.Fatal().Msg("dir1 is not set")
@@ -48,7 +49,16 @@ func main() {
 			if len(result) > 0 {
 				for _, r := range result {
 					for _, e := range r.Envs {
-						tableData = append(tableData, []string{r.Name, e.Name, e.Val1, e.Val2})
+						if notPresentSide != nil && *notPresentSide != "" {
+							if *notPresentSide == "dir1" && e.Val1 == "" {
+								tableData = append(tableData, []string{r.Name, e.Name, e.Val1, e.Val2})
+							}
+							if *notPresentSide == "dir2" && e.Val2 == "" {
+								tableData = append(tableData, []string{r.Name, e.Name, e.Val1, e.Val2})
+							}
+						} else {
+							tableData = append(tableData, []string{r.Name, e.Name, e.Val1, e.Val2})
+						}
 					}
 				}
 			}
@@ -57,7 +67,7 @@ func main() {
 
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Service", "Name", "val1", "val2"})
-
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
 	for _, v := range tableData {
 		table.Append(v)
 	}
